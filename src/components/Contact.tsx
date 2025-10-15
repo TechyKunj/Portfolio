@@ -15,17 +15,23 @@ export default function Contact() {
     setIsSubmitting(true);
 
     try {
-      // Send data to Google Apps Script Web App
+      // Use FormData for Google Apps Script compatibility
+      const formBody = new FormData();
+      formBody.append('name', formData.name);
+      formBody.append('email', formData.email);
+      formBody.append('message', formData.message);
+
       const response = await fetch(
         'https://script.google.com/macros/s/AKfycbx-GxSVI0d3SpdC1Qlo3tf0RICY_JxEzaEDIHRWr2zHPRwrYNexB0McZ1OsqHOtJpp9hw/exec',
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
+          body: formBody
         }
       );
 
-      if (response.ok) {
+      const result = await response.json();
+
+      if (result.result === 'success') {
         setSubmitStatus('success');
         setFormData({ name: '', email: '', message: '' });
       } else {
@@ -53,6 +59,7 @@ export default function Contact() {
         <h2 className="text-4xl font-bold text-gray-900 text-center mb-16">Get In Touch</h2>
 
         <div className="grid md:grid-cols-2 gap-12">
+          {/* Contact Info */}
           <div>
             <h3 className="text-2xl font-semibold text-gray-900 mb-6">Let's Connect</h3>
             <p className="text-gray-600 mb-8 leading-relaxed">
@@ -98,6 +105,7 @@ export default function Contact() {
             </div>
           </div>
 
+          {/* Contact Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -160,10 +168,10 @@ export default function Contact() {
             </button>
 
             {submitStatus === 'success' && (
-              <p className="text-green-600 text-center">Message sent successfully!</p>
+              <p className="text-green-600 text-center animate-pulse">Message sent successfully!</p>
             )}
             {submitStatus === 'error' && (
-              <p className="text-red-600 text-center">Failed to send message. Try again!</p>
+              <p className="text-red-600 text-center animate-pulse">Failed to send message. Try again!</p>
             )}
           </form>
         </div>
