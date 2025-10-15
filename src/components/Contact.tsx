@@ -14,13 +14,30 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Send data to Google Apps Script Web App
+      const response = await fetch(
+        'https://script.google.com/macros/s/AKfycbx-GxSVI0d3SpdC1Qlo3tf0RICY_JxEzaEDIHRWr2zHPRwrYNexB0McZ1OsqHOtJpp9hw/exec',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        }
+      );
 
-    setSubmitStatus('success');
-    setIsSubmitting(false);
-    setFormData({ name: '', email: '', message: '' });
-
-    setTimeout(() => setSubmitStatus('idle'), 3000);
+      if (response.ok) {
+        setSubmitStatus('success');
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setSubmitStatus('idle'), 3000);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -144,6 +161,9 @@ export default function Contact() {
 
             {submitStatus === 'success' && (
               <p className="text-green-600 text-center">Message sent successfully!</p>
+            )}
+            {submitStatus === 'error' && (
+              <p className="text-red-600 text-center">Failed to send message. Try again!</p>
             )}
           </form>
         </div>
